@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0B1626">
+  <meta name="description" content="Moose Crossing: a multiplayer reaction game. Hit BRAKE when the moose crosses. Join with a room code, no login.">
+  <title>Moose Crossing</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect x='18' y='18' width='64' height='64' rx='7' transform='rotate(45 50 50)' fill='%23FFC247' stroke='%230B1626' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@400;500;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ JOIN ============ -->
+<section id="screen-join" class="screen join active" aria-labelledby="join-title">
+  <svg class="join-bg" aria-hidden="true" viewBox="0 0 390 844" preserveAspectRatio="xMidYMax slice">
+    <g fill="#F4F7FB" opacity="0.5">
+      <circle cx="40" cy="80" r="2"/><circle cx="320" cy="60" r="2.5"/><circle cx="210" cy="120" r="1.5"/><circle cx="350" cy="190" r="2"/><circle cx="70" cy="240" r="1.5"/><circle cx="300" cy="300" r="2"/><circle cx="25" cy="420" r="2"/><circle cx="370" cy="470" r="1.5"/>
+    </g>
+    <polygon points="0,844 0,720 70,660 130,700 200,620 270,690 330,640 390,700 390,844" fill="#15253B"/>
+  </svg>
+
+  <div class="join-inner">
+    <div class="brand">
+      <svg class="sign" role="img" aria-label="Yellow moose road sign" viewBox="0 0 100 100">
+        <rect x="18" y="18" width="64" height="64" rx="7" transform="rotate(45 50 50)" fill="#FFC247" stroke="#0B1626" stroke-width="3"/>
+        <rect x="21" y="21" width="58" height="58" rx="5" transform="rotate(45 50 50)" fill="none" stroke="#0B1626" stroke-width="2"/>
+        <use href="#moose-shape" transform="translate(57,57) scale(0.36)" fill="#0B1626"/>
+      </svg>
+      <h1 id="join-title">MOOSE<br>CROSSING</h1>
+      <p class="tagline">Hit <strong>BRAKE</strong> when the moose crosses.<br>Not the beaver. Not the goose.</p>
+    </div>
+
+    <form id="join-form" class="join-form" autocomplete="off" novalidate>
+      <div class="field">
+        <label for="name-input">Your name</label>
+        <input id="name-input" maxlength="16" placeholder="e.g. Kennedy" required>
+      </div>
+      <div class="field">
+        <label for="code-input">Room code</label>
+        <input id="code-input" class="code-input" maxlength="4" placeholder="MOOS" autocapitalize="characters" spellcheck="false" inputmode="text">
+      </div>
+      <p id="join-error" class="error" role="alert"></p>
+      <button type="submit" class="btn btn-primary btn-big" id="join-btn">JOIN GAME</button>
+      <div class="or"><span>or</span></div>
+      <button type="button" class="btn btn-ghost" id="create-btn">Create a new room</button>
+    </form>
+
+    <p class="fine">No sign-up. No download. 2–8 players.</p>
+  </div>
+</section>
+
+<!-- ============ ROOM (lobby / game / final) ============ -->
+<section id="screen-room" class="screen room">
+  <header class="topbar">
+    <div class="top-left">
+      <svg class="sign-sm" aria-hidden="true" viewBox="0 0 100 100">
+        <rect x="18" y="18" width="64" height="64" rx="7" transform="rotate(45 50 50)" fill="#FFC247" stroke="#0B1626" stroke-width="3"/>
+        <use href="#moose-shape" transform="translate(57,57) scale(0.36)" fill="#0B1626"/>
+      </svg>
+      <span class="top-title">MOOSE CROSSING</span>
+    </div>
+    <div class="top-right">
+      <span id="round-chip" class="chip round-chip" hidden></span>
+      <button id="code-chip" class="chip code-chip" type="button" aria-label="Copy invite link">Room <strong id="code-chip-text">----</strong></button>
+      <span id="stake-chip" class="chip stake-chip"></span>
+    </div>
+  </header>
+
+  <div class="room-layout">
+    <main class="stage">
+
+      <!-- LOBBY -->
+      <div id="view-lobby" class="view">
+        <div class="card code-card">
+          <div>
+            <span class="label">Room code — share it</span>
+            <span id="lobby-code" class="big-code">----</span>
+          </div>
+          <div class="code-actions">
+            <button id="copy-btn" type="button" class="btn btn-ghost btn-sm">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+              Copy link
+            </button>
+            <button id="share-btn" type="button" class="btn btn-ghost btn-sm" hidden>
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12v8h16v-8M12 3v13M7 8l5-5 5 5"/></svg>
+              Share
+            </button>
+          </div>
+        </div>
+
+        <div class="card stake-card">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4zM17 6h3v2a3 3 0 0 1-3 3M7 6H4v2a3 3 0 0 0 3 3"/></svg>
+          <div class="stake-body">
+            <label for="stake-input" class="label light">THE STAKE · the loser pays it</label>
+            <input id="stake-input" maxlength="60" placeholder="e.g. Loser buys Timmies">
+            <span id="stake-text" class="stake-text"></span>
+            <span class="stake-rule">Lowest total score after the last round loses. The loser pays the stake and does a forfeit.</span>
+          </div>
+        </div>
+
+        <div class="card how">
+          <h2>How to play</h2>
+          <ol class="how-list">
+            <li><span class="how-ico moose-ico"><svg viewBox="0 0 200 160" aria-hidden="true"><use href="#moose-full"/></svg></span><span><strong>Moose?</strong> Hit BRAKE as fast as you can.</span></li>
+            <li><span class="how-ico"><svg viewBox="0 0 200 160" aria-hidden="true"><use href="#beaver-full"/></svg></span><span><strong>Beaver, goose, hockey player?</strong> Don't brake. −50.</span></li>
+            <li><span class="how-ico timer-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg></span><span><strong>Fastest foot wins.</strong> Braking at nothing costs 25.</span></li>
+            <li><span class="how-ico timer-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h11v6a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V8zM16 10h2a2 2 0 0 1 0 4h-2M8 2v3M12 2v3"/></svg></span><span><strong>Lowest score at the end loses.</strong> The loser pays the stake (like buying Timmies) and does a forfeit.</span></li>
+          </ol>
+        </div>
+
+        <div class="lobby-players">
+          <div class="row-between"><h2>Drivers</h2><span id="player-count" class="muted"></span></div>
+          <div id="lobby-grid" class="lobby-grid"></div>
+        </div>
+
+        <div id="host-controls" class="host-controls">
+          <div class="rounds-pick" role="group" aria-label="Number of rounds">
+            <span class="label">Rounds</span>
+            <div class="seg">
+              <button type="button" data-rounds="5">5</button>
+              <button type="button" data-rounds="10">10</button>
+              <button type="button" data-rounds="15">15</button>
+            </div>
+          </div>
+          <p id="start-error" class="error" role="alert"></p>
+          <button id="start-btn" type="button" class="btn btn-primary btn-big">START ENGINES</button>
+        </div>
+        <p id="wait-host" class="wait-host">Waiting for the host to start…</p>
+      </div>
+
+      <!-- GAME -->
+      <div id="view-game" class="view" hidden>
+        <div class="hud">
+          <span id="twist-badge" class="twist-badge"></span>
+          <span id="readout" class="readout" aria-live="polite"></span>
+        </div>
+        <div id="road" class="road">
+          <svg class="road-svg" aria-hidden="true" viewBox="0 0 800 500" preserveAspectRatio="xMidYMax slice">
+            <rect width="800" height="500" fill="#13233A"/>
+            <g fill="#F4F7FB" opacity="0.7"><circle cx="60" cy="40" r="2.5"/><circle cx="700" cy="50" r="2.5"/><circle cx="400" cy="30" r="2"/><circle cx="200" cy="90" r="2"/><circle cx="560" cy="110" r="2"/><circle cx="120" cy="150" r="1.5"/></g>
+            <circle cx="660" cy="80" r="28" fill="#E9EEF5"/>
+            <polygon points="0,250 120,150 230,215 360,120 480,200 600,135 720,200 800,165 800,250" fill="#20385A"/>
+            <polygon points="0,250 140,205 260,240 420,185 560,235 700,195 800,222 800,250" fill="#2B4766"/>
+            <rect y="250" width="800" height="250" fill="#DCE6F0"/>
+            <polygon points="360,250 440,250 760,500 40,500" fill="#3A4656"/>
+            <g class="lane-marks" fill="#FFC247"><rect x="396" y="262" width="8" height="18"/><rect x="393" y="305" width="14" height="30"/><rect x="389" y="370" width="22" height="44"/><rect x="384" y="450" width="32" height="50"/></g>
+            <g fill="#16324A"><polygon points="60,330 105,245 150,330"/><polygon points="165,290 192,245 219,290"/><polygon points="650,335 695,245 740,335"/><polygon points="575,290 602,245 629,290"/></g>
+            <polygon class="headlights" points="250,500 400,300 550,500" fill="#FFF4C2" opacity="0.18"/>
+          </svg>
+          <div id="creature" class="creature" aria-live="assertive"></div>
+          <div id="fog" class="fog"></div>
+          <div id="road-msg" class="road-msg"></div>
+        </div>
+        <p id="hint" class="hint">Watch the road…</p>
+        <button id="brake-btn" class="brake" type="button" aria-label="Brake">BRAKE</button>
+        <p class="kbd-hint">Laptop? Press <kbd>Space</kbd> to brake.</p>
+
+        <div id="round-results" class="card round-results" hidden>
+          <div class="row-between">
+            <h2 id="rr-title">Round result</h2>
+            <span id="rr-next" class="muted"></span>
+          </div>
+          <div id="rr-headline" class="rr-headline"></div>
+          <ol id="rr-list" class="rr-list"></ol>
+        </div>
+      </div>
+
+      <!-- FINAL -->
+      <div id="view-final" class="view" hidden>
+        <div class="card champion">
+          <svg class="crown" role="img" aria-label="Gold crown" viewBox="0 0 84 60"><path d="M6 50 L2 12 L24 30 L42 4 L60 30 L82 12 L78 50 Z" fill="#FFC247" stroke="#0B1626" stroke-width="3" stroke-linejoin="round"/><rect x="6" y="48" width="72" height="9" rx="3" fill="#FFC247" stroke="#0B1626" stroke-width="3"/><circle cx="42" cy="30" r="5" fill="#E8412C"/></svg>
+          <span id="champ-room" class="label">CHAMPION</span>
+          <span id="champ-name" class="champ-name"></span>
+          <span class="champ-title">Moose Master of the Highway</span>
+          <div class="champ-stats">
+            <div><strong id="champ-points"></strong><span>points</span></div>
+            <div><strong id="champ-best"></strong><span>best brake</span></div>
+            <div><strong id="champ-wins"></strong><span>rounds won</span></div>
+          </div>
+        </div>
+        <div id="final-stake" class="card stake-final">
+          <span id="final-loser-label" class="label light">THE LOSER · lowest score</span>
+          <strong id="final-loser" class="loser-name"></strong>
+          <span id="final-stake-text"></span>
+        </div>
+        <div id="final-forfeit" class="card">
+          <span id="forfeit-label" class="label">FORFEIT</span>
+          <p id="forfeit-text" class="forfeit-text"></p>
+        </div>
+        <div class="card">
+          <span class="label">FINAL STANDINGS</span>
+          <ol id="final-list" class="final-list"></ol>
+        </div>
+        <div class="final-actions">
+          <button id="card-btn" type="button" class="btn btn-ghost">Save winner card</button>
+          <button id="rematch-btn" type="button" class="btn btn-primary">REMATCH</button>
+        </div>
+        <p id="final-wait" class="wait-host" hidden>Waiting for the host to start a rematch…</p>
+      </div>
+    </main>
+
+    <aside class="side">
+      <div class="card standings-card">
+        <span class="label">LIVE STANDINGS</span>
+        <ol id="standings" class="standings"></ol>
+      </div>
+      <div class="card chat-card">
+        <span class="label">ROOM CHAT</span>
+        <div id="chat-log" class="chat-log" aria-live="polite"></div>
+        <form id="chat-form" class="chat-form" autocomplete="off">
+          <label for="chat-input" class="sr-only">Message</label>
+          <input id="chat-input" maxlength="140" placeholder="Talk your talk…">
+          <button type="submit" aria-label="Send message">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+          </button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<div id="toast" class="toast" role="status"></div>
+<div id="conn" class="conn" hidden>Reconnecting…</div>
+
+<!-- ============ SHAPES ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="moose-shape">
+      <rect x="-34" y="10" width="7" height="42" rx="3"/><rect x="-20" y="10" width="7" height="42" rx="3"/><rect x="18" y="10" width="7" height="42" rx="3"/><rect x="30" y="10" width="7" height="42" rx="3"/>
+      <ellipse cx="0" cy="0" rx="42" ry="23"/><ellipse cx="-22" cy="-12" rx="20" ry="15"/>
+      <path d="M-40 -12 L-58 -32 L-48 -40 L-26 -22 Z"/>
+      <ellipse cx="-60" cy="-36" rx="16" ry="10"/><ellipse cx="-74" cy="-30" rx="9" ry="8"/>
+      <path d="M-58 -44 C-70 -70 -95 -66 -100 -58 L-92 -56 L-96 -66 L-86 -60 L-86 -72 L-78 -62 L-74 -74 L-68 -58 Z"/>
+      <path d="M-52 -44 C-40 -70 -15 -68 -10 -58 L-18 -56 L-12 -66 L-24 -60 L-22 -72 L-32 -62 L-36 -74 L-42 -58 Z"/>
+    </g>
+    <!-- Full-colour creatures, drawn in a 200x160 box with feet on y=150 -->
+    <g id="moose-full">
+      <g transform="translate(118,96)" fill="#3B2414">
+        <rect x="-34" y="10" width="7" height="44" rx="3"/><rect x="-20" y="10" width="7" height="44" rx="3"/><rect x="18" y="10" width="7" height="44" rx="3"/><rect x="30" y="10" width="7" height="44" rx="3"/>
+        <ellipse cx="0" cy="0" rx="42" ry="23"/><ellipse cx="-22" cy="-12" rx="20" ry="15"/>
+        <path d="M-40 -12 L-58 -32 L-48 -40 L-26 -22 Z"/>
+        <ellipse cx="-60" cy="-36" rx="16" ry="10"/><ellipse cx="-74" cy="-30" rx="9" ry="8"/>
+        <circle cx="-62" cy="-39" r="2" fill="#FFC247"/>
+        <path fill="#7A5230" d="M-58 -44 C-70 -70 -95 -66 -100 -58 L-92 -56 L-96 -66 L-86 -60 L-86 -72 L-78 -62 L-74 -74 L-68 -58 Z"/>
+        <path fill="#7A5230" d="M-52 -44 C-40 -70 -15 -68 -10 -58 L-18 -56 L-12 -66 L-24 -60 L-22 -72 L-32 -62 L-36 -74 L-42 -58 Z"/>
+      </g>
+    </g>
+    <g id="beaver-full">
+      <ellipse cx="150" cy="128" rx="34" ry="11" fill="#4A3324" transform="rotate(-12 150 128)"/>
+      <g stroke="#2E2018" stroke-width="2" opacity="0.6"><path d="M128 124 l40 -8M132 132 l40 -8"/></g>
+      <ellipse cx="100" cy="118" rx="44" ry="30" fill="#8A5A34"/>
+      <circle cx="58" cy="104" r="22" fill="#8A5A34"/>
+      <circle cx="50" cy="86" r="6" fill="#6B4528"/>
+      <ellipse cx="40" cy="110" rx="12" ry="9" fill="#A87448"/>
+      <circle cx="31" cy="106" r="4" fill="#2A1A10"/>
+      <circle cx="52" cy="98" r="3" fill="#0B1626"/>
+      <rect x="36" y="116" width="5" height="8" fill="#F4F7FB"/><rect x="42" y="116" width="5" height="8" fill="#F4F7FB"/>
+      <ellipse cx="78" cy="146" rx="10" ry="5" fill="#6B4528"/><ellipse cx="118" cy="146" rx="10" ry="5" fill="#6B4528"/>
+    </g>
+    <g id="goose-full">
+      <ellipse cx="112" cy="112" rx="46" ry="26" fill="#8E8A82"/>
+      <path d="M150 104 Q178 96 182 116 Q160 120 150 116 Z" fill="#2B2A28"/>
+      <ellipse cx="108" cy="104" rx="30" ry="14" fill="#6E6A63"/>
+      <path d="M74 104 Q60 70 66 40 L78 40 Q76 72 88 100 Z" fill="#1E1D1B"/>
+      <ellipse cx="68" cy="36" rx="14" ry="10" fill="#1E1D1B"/>
+      <path d="M58 40 Q64 46 72 42 L70 34 Q62 32 58 40 Z" fill="#F4F7FB"/>
+      <path d="M54 34 L36 38 L54 40 Z" fill="#2B2A28"/>
+      <circle cx="64" cy="31" r="2" fill="#F4F7FB"/>
+      <path d="M110 136 L104 150 M122 136 L128 150" stroke="#2B2A28" stroke-width="4" stroke-linecap="round"/>
+      <path d="M96 150 h14 M122 150 h14" stroke="#2B2A28" stroke-width="4" stroke-linecap="round"/>
+    </g>
+    <g id="hockey-full">
+      <path d="M150 60 L176 140 L196 140" stroke="#C9A06A" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <rect x="82" y="58" width="56" height="52" rx="12" fill="#C8321F"/>
+      <rect x="82" y="78" width="56" height="8" fill="#F4F7FB"/>
+      <path d="M86 70 L60 92" stroke="#C8321F" stroke-width="14" stroke-linecap="round"/>
+      <path d="M134 70 L156 64" stroke="#C8321F" stroke-width="14" stroke-linecap="round"/>
+      <rect x="88" y="108" width="44" height="16" rx="4" fill="#0B1626"/>
+      <rect x="90" y="122" width="14" height="22" rx="4" fill="#F4F7FB"/><rect x="116" y="122" width="14" height="22" rx="4" fill="#F4F7FB"/>
+      <rect x="84" y="142" width="24" height="8" rx="3" fill="#0B1626"/><rect x="112" y="142" width="24" height="8" rx="3" fill="#0B1626"/>
+      <circle cx="110" cy="40" r="20" fill="#E8C19A"/>
+      <path d="M88 40 A22 22 0 0 1 132 40 L132 34 A22 22 0 0 0 88 34 Z" fill="#0B1626"/>
+      <path d="M90 36 A20 20 0 0 1 130 36 L130 28 Q110 12 90 28 Z" fill="#0B1626"/>
+      <path d="M96 44 H124 M98 50 H122" stroke="#9FB3C8" stroke-width="2"/>
+    </g>
+  </defs>
+</svg>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="client.js"></script>
+</body>
+</html>
